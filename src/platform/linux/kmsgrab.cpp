@@ -2996,10 +2996,19 @@ namespace platf {
       // measured on hardware that does not need it.
       const char *force_cpu_copy = std::getenv("HERMES_KMS_FORCE_CPU_COPY");
       const bool forced_cpu_copy = force_cpu_copy && !std::strcmp(force_cpu_copy, "1");
+
+      const char *force_zero_copy = std::getenv("HERMES_KMS_FORCE_ZERO_COPY");
+      const bool forced_zero_copy = force_zero_copy && !std::strcmp(force_zero_copy, "1");
+
       if (forced_cpu_copy && hwdevice_type != mem_type_e::cuda) {
         BOOST_LOG(warning) << "HERMES_KMS_FORCE_CPU_COPY=1: using the CPU-copy capture path instead of zero-copy."sv;
       }
-      if (hwdevice_type == mem_type_e::cuda || forced_cpu_copy) {
+
+      if (forced_zero_copy && hwdevice_type == mem_type_e::cuda) {
+        BOOST_LOG(warning) << "HERMES_KMS_FORCE_ZERO_COPY=1: using experimental NVIDIA DMA-BUF zero-copy capture."sv;
+      }
+
+      if ((hwdevice_type == mem_type_e::cuda && !forced_zero_copy) || forced_cpu_copy) {
         auto disp = std::make_shared<kms::display_hermes_ram_t>(hwdevice_type);
         if (!disp->init(display_name, config)) {
           return disp;
