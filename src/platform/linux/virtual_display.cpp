@@ -926,6 +926,8 @@ namespace VDISPLAY {
       }
     }
 
+    // Hermes-KMS capture/control ioctls work with O_RDONLY. The driver intentionally
+    // restricts write access to prevent GPU auto-discovery from choosing this node.
     static int open_render_node_for_card_index(int card_index) {
       if (card_index < 0) {
         return -1;
@@ -940,7 +942,7 @@ namespace VDISPLAY {
         if (!is_render_node(entry.path())) {
           continue;
         }
-        const int fd = ::open(entry.path().c_str(), O_RDWR | O_CLOEXEC);
+        const int fd = ::open(entry.path().c_str(), O_RDONLY | O_CLOEXEC);
         if (fd < 0) {
           continue;
         }
@@ -996,7 +998,7 @@ namespace VDISPLAY {
           }
 
           device_t candidate {};
-          candidate.fd = ::open(entry.path().c_str(), O_RDWR | O_CLOEXEC);
+          candidate.fd = ::open(entry.path().c_str(), O_RDONLY | O_CLOEXEC);
           if (candidate.fd < 0) {
             continue;
           }
@@ -1154,7 +1156,7 @@ namespace VDISPLAY {
         }
 
         device_t candidate {};
-        candidate.fd = ::open(entry.path().c_str(), O_RDWR | O_CLOEXEC);
+        candidate.fd = ::open(entry.path().c_str(), O_RDONLY | O_CLOEXEC);
         if (candidate.fd < 0) {
           continue;
         }
